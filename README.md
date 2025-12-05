@@ -48,7 +48,7 @@ To run this project locally:
 Run the application using Streamlit:
 
    ```bash
-   pip install -r requirements.txt
+   streamlit run app.py
 ```
 
 The application will launch in your default web browser at http://localhost:8501.
