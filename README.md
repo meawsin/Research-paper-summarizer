@@ -44,13 +44,14 @@ To run this project locally:
    ```bash
    pip install -r requirements.txt
 
-
-
 ## ⚡ Usage
 Run the application using Streamlit:
 
    ```bash
    streamlit run app.py
 
-The application will launch in your default web browser at http://localhost:8501.
 
+*The application will launch in your default web browser at http://localhost:8501.
+
+## 📄 License
+This project is open-source and available under the MIT License.
