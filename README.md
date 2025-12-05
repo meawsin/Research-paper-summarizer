@@ -29,8 +29,8 @@ To run this project locally:
 
 1. **Clone the repo:**
    ```bash
-   git clone [https://github.com/YourUsername/ai-research-assistant.git](https://github.com/YourUsername/ai-research-assistant.git)
-   cd ai-research-assistant
+   git clone [https://github.com/YourUsername/Research-paper-summarizer.git](https://github.com/YourUsername/Research-paper-summarizer.git)
+   cd Research-paper-summarizer
 
 2. **Create a Virtual Environment (Optional but recommended):**
    ```bash
