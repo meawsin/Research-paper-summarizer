@@ -44,6 +44,8 @@ Unlike standard summarizers, this tool features a **RAG (Retrieval-Augmented Gen
 #### Additional Features
 ![Citations](assets/citation.png)
 ![Export to Text](assets/txt_file_download.png)
+- Direct citation generate
+- txt file generated for notes
 
 ## System Architecture
 
@@ -52,22 +54,22 @@ The project utilizes an AI Engineering approach to run large language models loc
 ```mermaid
 graph TD
     subgraph Frontend
-        A[User Interface<br/>(Streamlit)]
+        A[User Interface (Streamlit)]
     end
 
-    subgraph "Logic Layer"
-        B[Controller<br/>(app.py + logic.py)]
+    subgraph Logic Layer
+        B[Controller (app.py + logic.py)]
     end
 
-    subgraph "AI Engine (Local CPU)"
-        C[PDF Text Extractor<br/>(PyPDF)]
-        D[Summarization Model<br/>(DistilBART-CNN)]
-        E[Embedding Model<br/>(MiniLM-L6-v2)]
-        F[Q&A Model<br/>(RoBERTa-Base)]
+    subgraph AI Engine (Local CPU)
+        C[PDF Text Extractor (PyPDF)]
+        D[Summarization Model (DistilBART-CNN)]
+        E[Embedding Model (MiniLM-L6-v2)]
+        F[Q&A Model (RoBERTa-Base)]
     end
 
-    subgraph "Storage"
-        G[Vector Database<br/>(ChromaDB)]
+    subgraph Storage
+        G[Vector Database (ChromaDB)]
     end
 
     A -->|Upload PDF| B
