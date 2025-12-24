@@ -54,22 +54,22 @@ The project utilizes an AI Engineering approach to run large language models loc
 ```mermaid
 graph TD
     subgraph Frontend
-        A[User Interface (Streamlit)]
+        A[User Interface Streamlit]
     end
 
-    subgraph Logic Layer
-        B[Controller (app.py + logic.py)]
+    subgraph Logic_Layer
+        B[Controller app.py and logic.py]
     end
 
-    subgraph AI Engine (Local CPU)
-        C[PDF Text Extractor (PyPDF)]
-        D[Summarization Model (DistilBART-CNN)]
-        E[Embedding Model (MiniLM-L6-v2)]
-        F[Q&A Model (RoBERTa-Base)]
+    subgraph AI_Engine
+        C[PDF Text Extractor PyPDF]
+        D[Summarization Model DistilBART-CNN]
+        E[Embedding Model MiniLM-L6-v2]
+        F[QA Model RoBERTa-Base]
     end
 
     subgraph Storage
-        G[Vector Database (ChromaDB)]
+        G[Vector Database ChromaDB]
     end
 
     A -->|Upload PDF| B
