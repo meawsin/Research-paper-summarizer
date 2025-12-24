@@ -2,6 +2,10 @@
 Main application file for the Academic Research Summarizer.
 Runs the Streamlit interface in Permanent Dark Mode.
 """
+import os
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Hides INFO and WARNING logs
+
 import streamlit as st
 import logic
 
@@ -9,14 +13,19 @@ import logic
 st.set_page_config(
     page_title="Academic Research Summarizer",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
+    page_icon="🎓"
 )
 
 # 2. SESSION STATE MANAGEMENT
 if 'history' not in st.session_state:
     st.session_state.history = []
 if 'pdf_analysis' not in st.session_state:
-    st.session_state.pdf_analysis = None  # Stores the PDF result so it doesn't vanish
+    st.session_state.pdf_analysis = None
+if 'messages' not in st.session_state:
+    st.session_state.messages = []
+if 'last_uploaded_file' not in st.session_state:
+    st.session_state.last_uploaded_file = None
 
 # 3. PERMANENT DARK THEME VARIABLES
 BG_COLOR = "#0e1117"
@@ -42,7 +51,7 @@ st.markdown(f"""
     }}
 
     /* INPUT FIELDS */
-    .stTextInput input {{
+    .stTextInput input, .stChatInput textarea {{
         background-color: {INPUT_BG} !important;
         color: {TEXT_COLOR} !important;
         border: 1px solid {BORDER_COLOR};
@@ -53,6 +62,7 @@ st.markdown(f"""
         background-color: {CARD_BG};
         border-radius: 10px;
         border: 1px solid {BORDER_COLOR};
+        padding: 20px;
     }}
 
     /* BADGES */
@@ -100,7 +110,7 @@ st.markdown(f"""
 
 # 5. SIDEBAR NAVIGATION
 with st.sidebar:
-    st.markdown("### **Research Paper Summarizer**")
+    st.markdown("### **Research Assistant Pro**")
     st.markdown("---")
 
     # Tool Selection
@@ -115,7 +125,6 @@ with st.sidebar:
         st.caption("No papers yet.")
 
     st.markdown("---")
-    st.markdown("**User Profile:**")
     st.caption("👤 **Abd Al Mohsin Siraj**")
     st.markdown(
         "<div style='font-size:0.8em; color:#888;'>© 2254901009 & 2254901085</div>",
@@ -134,11 +143,7 @@ if nav_mode == "🔎 Search arXiv":
     # Search Bar
     col1, col2 = st.columns([4, 1])
     with col1:
-        topic = st.text_input(
-            "Research Topic",
-            placeholder="e.g. Swarm Robotics...",
-            label_visibility="collapsed"
-        )
+        topic = st.text_input("Research Topic", placeholder="e.g. Swarm Robotics...", label_visibility="collapsed")
     with col2:
         search_btn = st.button("🔎 Search", use_container_width=True)
 
@@ -155,28 +160,22 @@ if nav_mode == "🔎 Search arXiv":
             st.markdown("---")
 
             for i, paper in enumerate(papers):
-                # USE NATIVE STREAMLIT CONTAINER FOR THE CARD
                 with st.container(border=True):
-                    # Header
                     st.subheader(f"{i+1}. {paper['title']}")
-
-                    # Badges Row
                     st.markdown(f"""
                         <span class="badge">📅 {paper['published'].year}</span>
                         <span class="badge">✍️ {paper['authors']}</span>
                         <a href="{paper['url']}" target="_blank">🔗 Open PDF</a>
                     """, unsafe_allow_html=True)
+                    st.markdown("")
 
-                    st.markdown("")  # Spacer
-
-                    # Abstract Preview
                     with st.expander("▼ Read Abstract Preview"):
                         st.write(paper['abstract'])
 
-                    # Analyze Button
                     if st.button(f"⚡ Deep Dive Analysis", key=f"btn_{i}", use_container_width=True):
                         with st.spinner('Running AI Analysis...'):
-                            summary = logic.generate_summary(paper['abstract'])
+                            # UPDATE: Add summary_type="abstract"
+                            summary = logic.generate_summary(paper['abstract'], summary_type="abstract")
                             insights = logic.extract_insights(paper['abstract'])
 
                             # Update History
@@ -184,7 +183,7 @@ if nav_mode == "🔎 Search arXiv":
                                 st.session_state.history.append(paper['title'])
 
                             # Display Tabs
-                            t1, t2, t3 = st.tabs(["💡 Insights", "📝 Summary", "🔖 Citation"])
+                            t1, t2, t3 = st.tabs(["💡 Insights", " Summary", "🔖 Citation"])
 
                             with t1:
                                 st.markdown(f"""
@@ -196,24 +195,11 @@ if nav_mode == "🔎 Search arXiv":
                                 """, unsafe_allow_html=True)
 
                             with t2:
-                                st.write(summary)
+                                # Display the bullets nicely
+                                st.markdown(summary)
 
                             with t3:
                                 st.code(paper['citation'], language="markdown")
-
-                            # Download
-                            report_text = (
-                                f"TITLE: {paper['title']}\n\n"
-                                f"SUMMARY:\n{summary}\n\n"
-                                f"OBJECTIVE:\n{insights['Objectives']}\n\n"
-                                f"CONCLUSION:\n{insights['Key Conclusion']}"
-                            )
-                            st.download_button(
-                                "📥 Save Report",
-                                report_text,
-                                file_name=f"paper_{i+1}.txt",
-                                use_container_width=True
-                            )
         else:
             st.info("No papers found. Try a broader topic.")
 
@@ -222,11 +208,19 @@ if nav_mode == "🔎 Search arXiv":
 # ==========================================
 elif nav_mode == "📂 Upload PDF":
     st.markdown("#### Analyze Full PDF Files")
-    st.caption("Upload a paper and the AI will read the Introduction and Conclusion.")
+    st.caption("Upload a paper to get a detailed summary and chat with it.")
 
     uploaded_file = st.file_uploader("Drop PDF Here", type="pdf")
 
     if uploaded_file:
+        # --- NEW: CLEAR CHAT HISTORY IF NEW FILE UPLOADED ---
+        if st.session_state.last_uploaded_file != uploaded_file.name:
+            st.session_state.messages = []
+            st.session_state.pdf_analysis = None
+            st.session_state.last_uploaded_file = uploaded_file.name
+            # Clear logic DB
+            logic.rag_engine.clear_db()
+
         with st.container(border=True):
             col_a, col_b = st.columns([1, 4])
             with col_a:
@@ -236,26 +230,26 @@ elif nav_mode == "📂 Upload PDF":
                 st.caption(f"{round(uploaded_file.size/1024, 1)} KB • Local File")
 
             if st.button("⚡ Analyze PDF", use_container_width=True):
-                with st.spinner("Extracting text and analyzing..."):
+                with st.spinner("⏳ Reading & Generating Detailed Summary (this may take a minute)..."):
                     raw_text = logic.extract_text_from_pdf(uploaded_file)
+                    
+                    if raw_text.startswith("Error"):
+                        st.error(raw_text)
+                    else:
+                        st.session_state.pdf_analysis = {
+                            "filename": uploaded_file.name,
+                            "summary": logic.generate_summary(raw_text),
+                            "insights": logic.extract_insights(raw_text)
+                        }
+                        if uploaded_file.name not in st.session_state.history:
+                            st.session_state.history.append(uploaded_file.name)
 
-                    # Store result in session state so it doesn't vanish
-                    st.session_state.pdf_analysis = {
-                        "filename": uploaded_file.name,
-                        "summary": logic.generate_summary(raw_text),
-                        "insights": logic.extract_insights(raw_text)
-                    }
-
-                    if uploaded_file.name not in st.session_state.history:
-                        st.session_state.history.append(uploaded_file.name)
-
-        # Show Results if available
-        if (st.session_state.pdf_analysis and
-                st.session_state.pdf_analysis['filename'] == uploaded_file.name):
+        # Show Results
+        if st.session_state.pdf_analysis:
             data = st.session_state.pdf_analysis
             st.markdown("### 📝 Analysis Results")
 
-            t1, t2 = st.tabs(["💡 Key Insights", "📝 Full Summary"])
+            t1, t2, t3 = st.tabs(["💡 Key Insights", "📝 Detailed Summary", "💬 Chat with Paper"])
 
             with t1:
                 st.markdown(f"""
@@ -267,15 +261,40 @@ elif nav_mode == "📂 Upload PDF":
                 """, unsafe_allow_html=True)
 
             with t2:
-                st.write(data['summary'])
+                # Use a scrollable container for long summaries
+                st.markdown(f"<div style='height: 400px; overflow-y: scroll; padding-right: 10px;'>{data['summary']}</div>", unsafe_allow_html=True)
 
+            with t3:
+                st.markdown("##### 🤖 Ask questions about this specific paper")
+                
+                # Display chat history
+                for message in st.session_state.messages:
+                    with st.chat_message(message["role"]):
+                        st.markdown(message["content"])
+
+                # Chat Input
+                if prompt := st.chat_input("Ex: What is the sample size?"):
+                    st.session_state.messages.append({"role": "user", "content": prompt})
+                    with st.chat_message("user"):
+                        st.markdown(prompt)
+
+                    with st.chat_message("assistant"):
+                        with st.spinner("Searching document..."):
+                            answer, context = logic.rag_engine.ask_question(prompt)
+                            response_text = f"{answer}\n\n*Context: ...{context[:200]}...*"
+                            st.markdown(response_text)
+                            
+                    st.session_state.messages.append({"role": "assistant", "content": response_text})
+
+            # Download
             report_text = (
                 f"FILE: {data['filename']}\n\n"
-                f"SUMMARY:\n{data['summary']}\n\n"
-                f"INSIGHTS:\n{data['insights']}"
+                f"OBJECTIVE:\n{data['insights']['Objectives']}\n\n"
+                f"CONCLUSION:\n{data['insights']['Key Conclusion']}\n\n"
+                f"FULL SUMMARY:\n{data['summary']}"
             )
             st.download_button(
-                "📥 Download Analysis",
+                "📥 Download Full Analysis",
                 report_text,
                 file_name="analysis.txt",
                 use_container_width=True
