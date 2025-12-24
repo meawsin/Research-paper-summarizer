@@ -8,16 +8,28 @@ The AI Research Assistant is a specialized dashboard designed to accelerate acad
 
 Unlike standard summarizers, this tool features a **RAG (Retrieval-Augmented Generation)** engine, allowing researchers to "chat" with PDF documents to extract specific data points like sample sizes, methodologies, and datasets.
 
+
+## Key Features
+
+- **Real-Time Search:** Queries the arXiv database for up-to-date papers.
+- **Smart Summarization:** Uses `sshleifer/distilbart-cnn-12-6` to condense abstracts into meaningful insights.
+- **Deep Dive Analysis:** Automatically extracts Objectives and Conclusions separate from the main summary.
+- **RAG-Powered Chat:** Implements LangChain and ChromaDB to enable context-aware Question & Answering on specific documents.
+- **Auto-Citation:** Generates APA-style citations instantly.
+- **Exportable Reports:** One-click download of research notes to `.txt`.
+
 ## Application Gallery
+
+![Home Page](assets/dashboard_search.png)
 
 ### 1. Research & Discovery
 
 #### Real-Time Search
-![Dashboard Search](assets/dashboard_search.png)
 - Search 2M+ papers via arXiv API
-- Drag & drop local PDFs for analysis
-
 ![Search Results](assets/search_result.png)
+- Drag & drop local PDFs for analysis
+![File Upload Option](assets/upload_file.png)
+
 
 ### 2. Analysis & Insights
 
@@ -25,10 +37,8 @@ Unlike standard summarizers, this tool features a **RAG (Retrieval-Augmented Gen
 ![Key Insights](assets/key_insights.png)
 
 #### Detailed Summaries
+- Generates structured summaries
 ![Detailed Summary](assets/Detailed_summary.png)
-- Auto-extracts Objectives & Conclusions
-- Generates structured executive summaries
-
 ![Summary View](assets/summary.png)
 
 ### 3. Interactive AI
@@ -37,15 +47,16 @@ Unlike standard summarizers, this tool features a **RAG (Retrieval-Augmented Gen
 ![Deep Dive Analysis](assets/Deep_dive_analysis.png)
 
 #### RAG Chat Bot
-![Chat with Paper](assets/chat_with_paper.png)
-- Tabbed view for citations & insights
 - Ask questions like "What is the sample size?"
+![Chat with Paper](assets/chat_with_paper.png)
+
 
 #### Additional Features
+- Tabbed view for citations
 ![Citations](assets/citation.png)
-![Export to Text](assets/txt_file_download.png)
-- Direct citation generate
-- txt file generated for notes
+- Downloadable txt file for notes
+![Downloaded Text File](assets/txt_file_download.png)
+
 
 ## System Architecture
 
@@ -86,15 +97,6 @@ graph TD
     F -->|Final Answer| A
 ```
 
-
-## Key Features
-
-- **Real-Time Search:** Queries the arXiv database for up-to-date papers.
-- **Smart Summarization:** Uses `sshleifer/distilbart-cnn-12-6` to condense abstracts into meaningful insights.
-- **Deep Dive Analysis:** Automatically extracts Objectives and Conclusions separate from the main summary.
-- **RAG-Powered Chat:** Implements LangChain and ChromaDB to enable context-aware Question & Answering on specific documents.
-- **Auto-Citation:** Generates APA-style citations instantly.
-- **Exportable Reports:** One-click download of research notes to `.txt`.
 
 ## Installation
 
